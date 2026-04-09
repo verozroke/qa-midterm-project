@@ -1,0 +1,83 @@
+name: QA Automation Pipeline
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+jobs:
+  qa-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      APP_BASE_URL: "http://localhost:8080"
+      API_BASE_URL: "http://localhost:8080"
+      UI_BASE_URL: "http://localhost:8080"
+      TEST_USERNAME: "test.user"
+      TEST_PASSWORD: "ChangeMe123!"
+      INVALID_TEST_PASSWORD: "WrongPassword123!"
+      UI_HEADLESS: "true"
+      DATABASE_PATH: "test_tickets.db"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Install Playwright browsers
+        run: playwright install --with-deps chromium
+
+      - name: Start application server
+        run: |
+          python -m app.main &
+          sleep 3
+          curl -sf http://localhost:8080/api/health && echo "✓ Server up" || (echo "✗ Server failed" && exit 1)
+
+      - name: Run unit tests
+        run: |
+          mkdir -p test-results
+          pytest tests/unit/ -v --tb=short 2>&1 | tee test-results/unit.log
+
+      - name: Run API tests
+        run: |
+          pytest tests/api/ -v --tb=short 2>&1 | tee test-results/api.log
+
+      - name: Run UI tests
+        run: |
+          pytest tests/ui/ -v --tb=short 2>&1 | tee test-results/ui.log
+
+      - name: Run full suite with reports
+        run: |
+          pytest \
+            --junitxml=test-results/pytest-report.xml \
+            --html=test-results/report.html \
+            --self-contained-html \
+            -v || true
+
+      - name: Generate coverage report
+        run: |
+          coverage run -m pytest tests/unit/ tests/api/ || true
+          coverage report --show-missing | tee test-results/coverage.txt
+          coverage html -d test-results/htmlcov || true
+
+      - name: Quality gate check
+        run: python quality_gate.py
+
+      - name: Upload test artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: test-results/

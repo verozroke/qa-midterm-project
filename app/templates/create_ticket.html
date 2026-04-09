@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Create Ticket — Ticket System{% endblock %}
+{% block body %}
+<nav>
+  <span style="font-weight:700;">🎫 Ticket System</span>
+  <div data-testid="user-menu">
+    <a href="/dashboard">Dashboard</a>
+    <a href="/logout" data-testid="logout-btn">Logout</a>
+  </div>
+</nav>
+<div class="container">
+  <div class="card">
+    <h1>Create Ticket</h1>
+    {% if error %}
+    <div class="alert-danger">{{ error }}</div>
+    {% endif %}
+    {% if success %}
+    <div class="alert-success">{{ success }}</div>
+    {% endif %}
+    <form method="POST" action="/tickets/new">
+      <div class="form-group">
+        <label for="title">Title</label>
+        <input type="text" name="title" id="title" placeholder="Ticket title" />
+      </div>
+      <div class="form-group">
+        <label for="description">Description</label>
+        <textarea name="description" id="description" placeholder="Describe the issue..."></textarea>
+      </div>
+      <div class="form-group">
+        <label for="priority">Priority</label>
+        <select name="priority" id="priority">
+          <option value="low">Low</option>
+          <option value="medium" selected>Medium</option>
+          <option value="high">High</option>
+          <option value="critical">Critical</option>
+        </select>
+      </div>
+      <button type="submit">Create Ticket</button>
+    </form>
+  </div>
+</div>
+{% endblock %}
