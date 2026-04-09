@@ -44,7 +44,7 @@ class TestDashboardUI:
         assert "/login" in page.url
 
     def test_dashboard_has_new_ticket_link(self, logged_in_page, settings, test_logger):
-        assert logged_in_page.locator("a[href='/tickets/new']").is_visible()
+        assert logged_in_page.locator("a[href='/tickets/new']").first.is_visible()
 
     def test_dashboard_shows_tickets_table_or_empty(self, logged_in_page, settings, test_logger):
         dp = DashboardPage(logged_in_page, settings, test_logger)
@@ -73,7 +73,7 @@ class TestCreateTicketUI:
         cp.fill_and_submit("Dashboard Verify", "Should show up", "low")
         cp.assert_success()
         logged_in_page.goto(f"{settings.ui_base_url}/dashboard", wait_until="domcontentloaded")
-        assert logged_in_page.locator("text=Dashboard Verify").is_visible()
+        assert logged_in_page.locator("text=Dashboard Verify").first.is_visible()
 
 
 @pytest.mark.ui
