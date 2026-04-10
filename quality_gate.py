@@ -10,6 +10,7 @@ MAX_CRITICAL_FAILURES = 0
 MAX_SKIPPED_PERCENT = 20.0
 MIN_TOTAL_TESTS = 15
 
+# for commit
 
 def main():
     if not REPORT.exists():
