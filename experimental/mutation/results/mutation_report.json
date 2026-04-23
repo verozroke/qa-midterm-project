@@ -1,0 +1,183 @@
+{
+  "summary": {
+    "total": 15,
+    "applied": 15,
+    "killed": 10,
+    "survived": 5,
+    "mutation_score": 66.67
+  },
+  "by_module": {
+    "Authentication": {
+      "created": 5,
+      "killed": 4,
+      "survived": 1
+    },
+    "Ticket Validation": {
+      "created": 4,
+      "killed": 3,
+      "survived": 1
+    },
+    "Ticket CRUD": {
+      "created": 4,
+      "killed": 2,
+      "survived": 2
+    },
+    "Notifications": {
+      "created": 2,
+      "killed": 1,
+      "survived": 1
+    }
+  },
+  "results": [
+    {
+      "id": "M-AUTH-01",
+      "module": "Authentication",
+      "mutation_type": "Comparison operator flip",
+      "original": "if not user or user[\"password_hash\"] != _hash_pw(password):\n            return jsonify({\"error\": \"Invalid credentials\"}), 401",
+      "mutated": "if not user or user[\"password_hash\"] == _hash_pw(password):\n            return jsonify({\"error\": \"Invalid credentials\"}), 401",
+      "description": "Flip password check (API login) \u2014 accepts wrong passwords.",
+      "status": "killed",
+      "duration_s": 2.44
+    },
+    {
+      "id": "M-AUTH-02",
+      "module": "Authentication",
+      "mutation_type": "Return value mutation",
+      "original": "return info[\"user_id\"]",
+      "mutated": "return None",
+      "description": "Token validation always returns None \u2014 breaks all auth.",
+      "status": "killed",
+      "duration_s": 2.21
+    },
+    {
+      "id": "M-AUTH-03",
+      "module": "Authentication",
+      "mutation_type": "Boolean short-circuit removal",
+      "original": "if not username or not password:",
+      "mutated": "if not username and not password:",
+      "description": "Change OR to AND in credential check \u2014 weakens validation.",
+      "status": "survived",
+      "duration_s": 2.88
+    },
+    {
+      "id": "M-AUTH-04",
+      "module": "Authentication",
+      "mutation_type": "Constant alteration",
+      "original": "expires = datetime.now(timezone.utc) + timedelta(hours=2)",
+      "mutated": "expires = datetime.now(timezone.utc) + timedelta(hours=0)",
+      "description": "Tokens expire immediately on creation.",
+      "status": "killed",
+      "duration_s": 2.25
+    },
+    {
+      "id": "M-AUTH-05",
+      "module": "Authentication",
+      "mutation_type": "Negation removal",
+      "original": "if datetime.now(timezone.utc) > info[\"expires_at\"]:",
+      "mutated": "if datetime.now(timezone.utc) < info[\"expires_at\"]:",
+      "description": "Expiry check inverted \u2014 expired tokens treated as valid.",
+      "status": "killed",
+      "duration_s": 2.16
+    },
+    {
+      "id": "M-VAL-01",
+      "module": "Ticket Validation",
+      "mutation_type": "Boundary alteration",
+      "original": "elif len(title) > 200:",
+      "mutated": "elif len(title) > 2000:",
+      "description": "Title length limit raised from 200 to 2000 \u2014 weaker validation.",
+      "status": "killed",
+      "duration_s": 2.8
+    },
+    {
+      "id": "M-VAL-02",
+      "module": "Ticket Validation",
+      "mutation_type": "Tuple member removal",
+      "original": "if priority not in (\"low\", \"medium\", \"high\", \"critical\"):",
+      "mutated": "if priority not in (\"low\", \"medium\", \"high\"):",
+      "description": "'critical' priority no longer accepted \u2014 regression.",
+      "status": "survived",
+      "duration_s": 2.86
+    },
+    {
+      "id": "M-VAL-03",
+      "module": "Ticket Validation",
+      "mutation_type": "Conditional removal",
+      "original": "if errors:\n            return jsonify({\"errors\": errors}), 422",
+      "mutated": "if False:\n            return jsonify({\"errors\": errors}), 422",
+      "description": "Validation errors never returned \u2014 invalid tickets accepted.",
+      "status": "killed",
+      "duration_s": 2.82
+    },
+    {
+      "id": "M-VAL-04",
+      "module": "Ticket Validation",
+      "mutation_type": "Empty-string check removal",
+      "original": "if not title:",
+      "mutated": "if title:",
+      "description": "'Required' check inverted \u2014 empty title passes, non-empty fails.",
+      "status": "killed",
+      "duration_s": 2.63
+    },
+    {
+      "id": "M-CRUD-01",
+      "module": "Ticket CRUD",
+      "mutation_type": "HTTP status code change",
+      "original": "            return jsonify({\"error\": \"Ticket not found\"}), 404\n        return jsonify(dict(ticket)), 200",
+      "mutated": "            return jsonify({\"error\": \"Ticket not found\"}), 200\n        return jsonify(dict(ticket)), 200",
+      "description": "GET missing ticket returns 200 instead of 404.",
+      "status": "killed",
+      "duration_s": 2.76
+    },
+    {
+      "id": "M-CRUD-02",
+      "module": "Ticket CRUD",
+      "mutation_type": "SQL WHERE clause removal",
+      "original": "\"SELECT * FROM tickets WHERE created_by = ? ORDER BY created_at DESC\",\n            (g.current_user_id,),",
+      "mutated": "\"SELECT * FROM tickets ORDER BY created_at DESC\",\n            (),",
+      "description": "User filter removed from list query \u2014 privacy leak.",
+      "status": "survived",
+      "duration_s": 2.96
+    },
+    {
+      "id": "M-CRUD-03",
+      "module": "Ticket CRUD",
+      "mutation_type": "DELETE statement bypass",
+      "original": "db.execute(\"DELETE FROM tickets WHERE id = ?\", (ticket_id,))",
+      "mutated": "# db.execute(\"DELETE FROM tickets WHERE id = ?\", (ticket_id,))",
+      "description": "Delete is silently a no-op.",
+      "status": "killed",
+      "duration_s": 2.75
+    },
+    {
+      "id": "M-CRUD-04",
+      "module": "Ticket CRUD",
+      "mutation_type": "Default value change",
+      "original": "priority TEXT NOT NULL DEFAULT 'medium',",
+      "mutated": "priority TEXT NOT NULL DEFAULT 'low',",
+      "description": "Default priority changed \u2014 may affect downstream logic.",
+      "status": "survived",
+      "duration_s": 2.91
+    },
+    {
+      "id": "M-NOTIF-01",
+      "module": "Notifications",
+      "mutation_type": "LIMIT constant change",
+      "original": "ORDER BY created_at DESC LIMIT 20",
+      "mutated": "ORDER BY created_at DESC LIMIT 0",
+      "description": "Notifications list always empty.",
+      "status": "killed",
+      "duration_s": 2.58
+    },
+    {
+      "id": "M-NOTIF-02",
+      "module": "Notifications",
+      "mutation_type": "Boolean field mutation",
+      "original": "SET is_read = 1",
+      "mutated": "SET is_read = 0",
+      "description": "'Mark as read' actually marks as unread.",
+      "status": "survived",
+      "duration_s": 3.06
+    }
+  ]
+}

@@ -1,0 +1,121 @@
+name: Experimental Testing (Assignment 3)
+
+# Runs Performance / Mutation / Chaos tests.
+# Separate from the main QA workflow because these are slow and expensive.
+# Triggered manually or on tags to avoid running on every push.
+
+on:
+  workflow_dispatch:
+    inputs:
+      run_performance:
+        description: "Run performance tests (k6)"
+        type: boolean
+        default: true
+      run_mutation:
+        description: "Run mutation tests"
+        type: boolean
+        default: true
+      run_chaos:
+        description: "Run chaos tests"
+        type: boolean
+        default: true
+  push:
+    tags:
+      - "experimental-*"
+
+jobs:
+  experimental:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      APP_BASE_URL: "http://localhost:8080"
+      TEST_USERNAME: "test.user"
+      TEST_PASSWORD: "ChangeMe123!"
+      DATABASE_PATH: "tickets.db"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -r experimental/requirements-experimental.txt
+
+      - name: Install k6
+        if: ${{ inputs.run_performance != false }}
+        run: |
+          curl -fsSL https://dl.k6.io/key.gpg | sudo gpg --dearmor -o /usr/share/keyrings/k6-archive-keyring.gpg
+          echo "deb [signed-by=/usr/share/keyrings/k6-archive-keyring.gpg] https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list
+          sudo apt-get update
+          sudo apt-get install k6
+
+      - name: Start app server
+        run: |
+          python -m app.main &
+          echo $! > /tmp/app.pid
+          sleep 3
+          curl -sf http://localhost:8080/api/health && echo "✓ up" || (echo "✗ down" && exit 1)
+
+      # ── Performance ─────────────────────────────────────────────────
+      - name: Performance — normal load
+        if: ${{ inputs.run_performance != false }}
+        working-directory: experimental/performance
+        run: |
+          mkdir -p results
+          k6 run --env BASE_URL=http://localhost:8080 k6/normal_load.js || true
+
+      - name: Performance — peak load
+        if: ${{ inputs.run_performance != false }}
+        working-directory: experimental/performance
+        run: k6 run --env BASE_URL=http://localhost:8080 k6/peak_load.js || true
+
+      - name: Performance — spike load
+        if: ${{ inputs.run_performance != false }}
+        working-directory: experimental/performance
+        run: k6 run --env BASE_URL=http://localhost:8080 k6/spike_load.js || true
+
+      # Endurance deliberately shortened in CI (0.25x multiplier).
+      - name: Performance — endurance (shortened)
+        if: ${{ inputs.run_performance != false }}
+        working-directory: experimental/performance
+        run: |
+          k6 run --env BASE_URL=http://localhost:8080 \
+                 --env K6_DURATION_MULTIPLIER=0.25 \
+                 k6/endurance.js || true
+
+      # ── Mutation ────────────────────────────────────────────────────
+      - name: Mutation testing
+        if: ${{ inputs.run_mutation != false }}
+        run: python experimental/mutation/custom_mutation.py
+
+      # ── Chaos ───────────────────────────────────────────────────────
+      # --skip-api-kill because CI already manages the process lifecycle;
+      # we don't want the runner to kill and restart the app under itself.
+      - name: Chaos testing
+        if: ${{ inputs.run_chaos != false }}
+        run: python experimental/chaos/chaos_runner.py --skip-api-kill
+
+      - name: Stop app
+        if: always()
+        run: |
+          if [ -f /tmp/app.pid ]; then
+            kill $(cat /tmp/app.pid) 2>/dev/null || true
+          fi
+
+      - name: Upload experimental results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: experimental-results
+          path: |
+            experimental/performance/results/
+            experimental/mutation/results/
+            experimental/chaos/results/

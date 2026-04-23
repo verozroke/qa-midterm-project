@@ -1,0 +1,12 @@
+Method,Name,Error,Occurrences
+POST,POST /api/tickets,"ConnectionRefusedError(111, 'Connection refused')",44
+POST,POST /api/auth/login,CatchResponseError('Login failed: 0'),10
+GET,GET /api/notifications,"ConnectionRefusedError(111, 'Connection refused')",42
+POST,POST /api/tickets,"ConnectionResetError(104, 'Connection reset by peer')",15
+GET,GET /api/tickets,"ChunkedEncodingError(ProtocolError('Connection broken: IncompleteRead(0 bytes read, 23031 more expected)', IncompleteRead(0 bytes read, 23031 more expected)))",1
+GET,GET /api/tickets,"ConnectionResetError(104, 'Connection reset by peer')",25
+GET,GET /api/tickets,RemoteDisconnected('Remote end closed connection without response'),28
+GET,GET /api/tickets,"ConnectionRefusedError(111, 'Connection refused')",147
+GET,GET /api/notifications,RemoteDisconnected('Remote end closed connection without response'),2
+POST,POST /api/tickets,RemoteDisconnected('Remote end closed connection without response'),1
+GET,GET /api/notifications,"ConnectionResetError(104, 'Connection reset by peer')",6

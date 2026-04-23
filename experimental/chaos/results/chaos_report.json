@@ -1,0 +1,119 @@
+{
+  "elapsed_s": 46.3,
+  "base_url": "http://localhost:8080",
+  "summary": [
+    {
+      "scenario": "DB Latency (exclusive lock)",
+      "availability_pct": 0.0,
+      "mttr_s": 0.01,
+      "impact": "Write operations stall; reads may still succeed (W"
+    },
+    {
+      "scenario": "Network Latency (+500ms, 10% loss)",
+      "availability_pct": 507.4,
+      "mttr_s": "instant (proxy stop)",
+      "impact": "Client-visible slowdown; retries amplify load on u"
+    },
+    {
+      "scenario": "CPU Exhaustion (1 burners)",
+      "availability_pct": 5.5,
+      "mttr_s": 0.32,
+      "impact": "App still responds but slow; no graceful degradati"
+    },
+    {
+      "scenario": "api_downtime",
+      "availability_pct": "n/a",
+      "mttr_s": "n/a",
+      "impact": "skipped"
+    }
+  ],
+  "details": {
+    "db_latency": {
+      "scenario": "DB Latency (exclusive lock)",
+      "read_availability_pct": 100.0,
+      "write_availability_pct": 0.0,
+      "avg_write_latency_ms": 3002.9,
+      "mttr_s": 0.01,
+      "error_propagation_pct": 100.0,
+      "probes_taken": 3,
+      "impact": "Write operations stall; reads may still succeed (WAL mode)."
+    },
+    "network_latency": {
+      "scenario": "Network Latency (+500ms, 10% loss)",
+      "baseline_avg_ms": 3.5,
+      "degraded_avg_ms": 507.4,
+      "latency_inflation_ms": 503.9,
+      "baseline_error_pct": 0.0,
+      "degraded_error_pct": 8.7,
+      "recovery_avg_ms": 3.5,
+      "mttr_s": "instant (proxy stop)",
+      "probes_taken": 23,
+      "impact": "Client-visible slowdown; retries amplify load on upstream."
+    },
+    "cpu_exhaustion": {
+      "scenario": "CPU Exhaustion (1 burners)",
+      "baseline_avg_ms": 4.7,
+      "degraded_avg_ms": 5.5,
+      "degraded_error_pct": 0.0,
+      "recovery_avg_ms": 4.6,
+      "mttr_s": 0.32,
+      "latency_inflation_pct": 17.5,
+      "samples": [
+        {
+          "t_s": 0.53,
+          "avg_ms": 5.0,
+          "err_pct": 0.0
+        },
+        {
+          "t_s": 1.57,
+          "avg_ms": 7.6,
+          "err_pct": 0.0
+        },
+        {
+          "t_s": 2.6,
+          "avg_ms": 4.6,
+          "err_pct": 0.0
+        },
+        {
+          "t_s": 3.62,
+          "avg_ms": 4.3,
+          "err_pct": 0.0
+        },
+        {
+          "t_s": 4.66,
+          "avg_ms": 7.4,
+          "err_pct": 0.0
+        },
+        {
+          "t_s": 5.69,
+          "avg_ms": 4.5,
+          "err_pct": 0.0
+        },
+        {
+          "t_s": 6.72,
+          "avg_ms": 4.8,
+          "err_pct": 0.0
+        },
+        {
+          "t_s": 7.76,
+          "avg_ms": 8.0,
+          "err_pct": 0.0
+        },
+        {
+          "t_s": 8.78,
+          "avg_ms": 4.1,
+          "err_pct": 0.0
+        },
+        {
+          "t_s": 9.81,
+          "avg_ms": 4.7,
+          "err_pct": 0.0
+        }
+      ],
+      "impact": "App still responds but slow; no graceful degradation observed."
+    },
+    "api_downtime": {
+      "skipped": true
+    }
+  }
+}

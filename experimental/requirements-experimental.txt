@@ -1,0 +1,13 @@
+# Additional dependencies for Assignment 3 experimental testing.
+# Install alongside requirements.txt:
+#   pip install -r requirements.txt -r experimental/requirements-experimental.txt
+
+# Performance testing (Python alternative to k6)
+locust>=2.31,<3.0
+
+# Mutation testing — we use a custom runner, but mutmut is here as a backup
+# if a reviewer wants to cross-check against the industry-standard tool.
+mutmut>=2.5,<3.0
+
+# requests is already in the midterm stack; listed here for completeness.
+# multiprocessing, socket, sqlite3 are stdlib — no extra install.

@@ -1,0 +1,4 @@
+Method,Name,Error,Occurrences
+GET,GET /api/tickets,HTTPError('500 Server Error: INTERNAL SERVER ERROR for url: GET /api/tickets'),22
+GET,GET /api/notifications,HTTPError('500 Server Error: INTERNAL SERVER ERROR for url: GET /api/notifications'),4
+POST,POST /api/tickets,HTTPError('500 Server Error: INTERNAL SERVER ERROR for url: POST /api/tickets'),3
