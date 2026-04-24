@@ -1,0 +1,2 @@
+Azamatov Almaz
+Takayev Askhat
